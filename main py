@@ -1,0 +1,84 @@
+import pgzrun
+import random
+
+WIDTH = 1000
+HEIGHT = 600
+TITLE = "Son uçuş"
+
+plane = Actor('777', (500, 240), size = (400,400))
+background = Actor("background", size = (1000,650))
+play_button = Actor("play button", (500, 300))
+plane.speed = 5
+mode = 'menu'
+
+enemies = []
+for i in range(5):
+    x = random.randint(20, WIDTH - 20)
+    y = random.randint(-450, -50)
+    enemy = Actor("fighter", (x, y))
+    enemy.speed = random.randint(1, 7)
+    enemies.append(enemy)
+
+score = 0
+def reset_enemies():
+    global enemies
+    enemies = []
+    for i in range(5):
+        x = random.randint(20, WIDTH - 20)
+        y = random.randint(-450, -50)
+        enemy = Actor("fighter", (x, y))
+        enemy.speed = random.randint(1, 7)
+        enemies.append(enemy)
+
+def draw():
+    background.draw()
+
+    if mode == 'menu':
+        play_button.draw()
+
+    if mode == 'game':
+        plane.draw()
+        for enemy in enemies:
+            enemy.draw()
+        screen.draw.text("Puan: " + str(score), (10, 10), color="white", fontsize=20)
+    
+    elif mode == 'end':
+        screen.draw.text("Oyun bitti! Yeniden başlamak için Entera basın!", center = (500, 300), color = "black", fontsize = 36)
+                                                                                                                             
+def on_mouse_down(button, pos):    
+    global mode
+    if play_button.collidepoint(pos):
+            mode = 'game'                                                                                                  
+    
+def update(dt):   
+    global score, mode 
+
+    if mode == 'game':
+    
+        if keyboard.left and plane.x > 20:
+            plane.x -= plane.speed
+        if keyboard.right and plane.x < WIDTH - 20:
+            plane.x += plane.speed
+        if keyboard.up and plane.y > 20:
+            plane.y -= plane.speed
+        if keyboard.down and plane.y < HEIGHT - 20:
+            plane.y += plane.speed
+
+    
+        for enemy in enemies:
+            enemy.y += enemy.speed
+            if enemy.y > HEIGHT + 50:
+                enemy.y = random.randint(-450, -50)
+                enemy.x = random.randint(20, WIDTH - 20)
+                score += 1
+    
+        enemy_index = plane.collidelist(enemies)
+        if enemy_index != -1:
+            mode = "end"
+
+    if mode == 'end' and keyboard.RETURN:
+        mode = 'game'
+        plane.pos = (500, 240)
+        reset_enemies()
+    
+pgzrun.go()
